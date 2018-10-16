@@ -22,7 +22,6 @@ const actors = require('./data/actors.json');
     await db.films.bulkCreate(films.slice(0,3));
 
     // 3. Пакетное обновление поля liked у актеров с 3 фильмами
-
     await db.actors.update({
         liked: 999
     },
@@ -31,4 +30,29 @@ const actors = require('./data/actors.json');
             films: 3
         }    
     });
+
+    // 4. Пакетное удаление актеров с liked равным 0
+    await db.actors.destroy({
+        where: {
+            liked: 0
+        }
+    });
+
+    // 5. Получение за один запрос фильм со всеми его актерами (include)
+    (await db.films.findById(2, {
+        include: [{
+            model: db.actors,
+            as: 'Actors'
+        }]
+    })).Actors.forEach((e) => {
+        console.log(`>> ${e.name}`);
+    });
+
+    // 6. Создание и применение scope для фильмов вышедших с 2007 года
+    (await db.films.scope('new')
+    .findAll()).forEach((film) => {
+        console.log(`>> ${film.title}`);
+    })
+
+
 })();

@@ -48,5 +48,15 @@ module.exports = (Sequelize, sequelize) => {
                 min: 1
             }
         }
+    }, {
+        scopes: {
+            new: {
+                where: {
+                    year: {
+                        [Sequelize.Op.gte]: 2007        // >= 2007
+                    }
+                }
+            }
+        }
     });
 };
