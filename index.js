@@ -7,21 +7,27 @@ const actors = require('./data/actors.json');
 (async () => {
     await db.sequelize.sync({force: true});
 
-    // 1. Валидация полей budget, year и rating фильма
-    await db.films.create({
-        title: 'Баллада о солдате',
-        rating: 8.241,
-        year: 1959,
-        budget: 24423,
-        gross: 35020,
-        poster: 'https://st.kp.yandex.net/images/film_iphone/iphone360_46019.jpg',
-        position: 100
-    });
+    console.log('1. Валидация полей budget, year и rating фильма');
+    try
+    {
+        await db.films.create({
+            title: 'Баллада о солдате',
+            rating: 8.241,
+            year: 1959,
+            budget: 24423,
+            gross: 35020,
+            poster: 'https://st.kp.yandex.net/images/film_iphone/iphone360_46019.jpg',
+            position: 100
+        });
+    }
+    catch (e) { e.errors.forEach((err) => {
+        console.log(`\t >> Exception: ${err.message} <<`);
+    }); }
 
-    // 2. Пакетная вставка 3 фильмов
-    await db.films.bulkCreate(films.slice(0,3));
+    console.log('2. Пакетная вставка 3 фильмов');
+    await db.films.bulkCreate(films.slice(1,4));
 
-    // 3. Пакетное обновление поля liked у актеров с 3 фильмами
+    console.log('3. Пакетное обновление поля liked у актеров с 3 фильмами');
     await db.actors.update({
         liked: 999
     },
@@ -31,14 +37,14 @@ const actors = require('./data/actors.json');
         }    
     });
 
-    // 4. Пакетное удаление актеров с liked равным 0
+    console.log('4. Пакетное удаление актеров с liked равным 0');
     await db.actors.destroy({
         where: {
             liked: 0
         }
     });
 
-    // 5. Получение за один запрос фильм со всеми его актерами (include)
+    console.log('5. Получение за один запрос фильм со всеми его актерами (include)');
     (await db.films.findById(2, {
         include: [{
             model: db.actors,
@@ -48,11 +54,68 @@ const actors = require('./data/actors.json');
         console.log(`>> ${e.name}`);
     });
 
-    // 6. Создание и применение scope для фильмов вышедших с 2007 года
+    console.log('6. Создание и применение scope для фильмов вышедших с 2007 года');
     (await db.films.scope('new')
     .findAll()).forEach((film) => {
         console.log(`>> ${film.title}`);
-    })
+    });
 
+    console.log('7. Создание и вызов хуков beforeCreate, afterCreate');
+    db.sequelize.addHook('beforeBulkCreate', () => {
+        console.log('beforeBulkCreate');
+    });
+
+    db.sequelize.addHook('afterBulkCreate', () => {
+        console.log('afterBulkCreate');
+    });
+
+    await db.actors.bulkCreate(actors.slice(1,4));
+
+    await db.actorfilms.bulkCreate([
+        {actorId: 2, filmId: 2}    
+    ]); 
+
+    console.log('8. Транзакция: считываем всех актеров, пакетно обновляем им liked на 0, ждем 10 секунд, откатываем транзакцию');
+    await db.sequelize.transaction().then((_t) => {
+        return db.actors.update({
+            liked: 0
+        }, 
+        {
+            where: {},
+            transaction: _t
+        }).then(() => {
+            console.log('sleep(10000)');
+            setTimeout(function () {
+                console.log("rollback");
+                return _t.rollback();     // _t.commit();
+            }, 10000);
+        });
+    });
+
+    // 9. Демонстрация upgrade/downgrade методов миграции с добавление/удалением поля genres
+
+    //                              $ sequelize migration:create
+
+    // module.exports = {
+    // up: function(queryInterface, Sequelize) {
+     // logic for transforming into the new state
+    //    queryInterface.addColumn(
+    //      'Todo',
+    //      'completed',
+    //     Sequelize.STRING
+    //    );
+    //  },
+    //  down: function(queryInterface, Sequelize) {
+     // logic for reverting the changes
+    //    queryInterface.removeColumn(
+    //      'Todo',
+    //      'completed'
+    //    );
+    //  }
+    // }
+
+    //  And then, run it:           $ sequelize db:migrate
+
+    console.log('End');
 
 })();

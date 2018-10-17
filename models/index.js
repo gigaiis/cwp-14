@@ -1,5 +1,5 @@
-const Film = require('./film');
 const Actor = require('./actor');
+const Film = require('./film');
 const ActorFilms = require('./actorfilm');
 
 module.exports = (Sequelize, config) => {
@@ -8,7 +8,7 @@ module.exports = (Sequelize, config) => {
         dialect: config.dialect,
         logging: false
     });
-    
+
     const films = Film(Sequelize, sequelize);
     const actors = Actor(Sequelize, sequelize);
     const actorfilms = ActorFilms(Sequelize, sequelize);

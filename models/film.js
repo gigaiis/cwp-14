@@ -21,7 +21,7 @@ module.exports = (Sequelize, sequelize) => {
             allowNull: false,
             validate: {
                 isInt: true,
-                min: 1970
+                min: 1950
             }
         },
         budget: {
@@ -39,21 +39,13 @@ module.exports = (Sequelize, sequelize) => {
         poster: {
             type: Sequelize.STRING,
             allowNull: false
-        },
-        position: {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            validate: {
-                isInt: true,
-                min: 1
-            }
         }
     }, {
         scopes: {
             new: {
                 where: {
                     year: {
-                        [Sequelize.Op.gte]: 2007        // >= 2007
+                        [Sequelize.Op.gte]: 2007
                     }
                 }
             }
