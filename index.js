@@ -92,30 +92,6 @@ const actors = require('./data/actors.json');
         });
     });
 
-    // 9. Демонстрация upgrade/downgrade методов миграции с добавление/удалением поля genres
-
-    //                              $ sequelize migration:create
-
-    // module.exports = {
-    // up: function(queryInterface, Sequelize) {
-     // logic for transforming into the new state
-    //    queryInterface.addColumn(
-    //      'Todo',
-    //      'completed',
-    //     Sequelize.STRING
-    //    );
-    //  },
-    //  down: function(queryInterface, Sequelize) {
-     // logic for reverting the changes
-    //    queryInterface.removeColumn(
-    //      'Todo',
-    //      'completed'
-    //    );
-    //  }
-    // }
-
-    //  And then, run it:           $ sequelize db:migrate
-
     console.log('End');
 
 })();
